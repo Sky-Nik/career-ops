@@ -38,6 +38,7 @@ export type StatusKey =
   | 'discarded';
 
 export const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
   interview: 'Interview',
   offer: 'Offer',
   responded: 'Responded',
@@ -49,5 +50,5 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export const STATUS_ORDER = [
-  'interview', 'offer', 'responded', 'applied', 'evaluated', 'skip', 'rejected', 'discarded',
+  'interview', 'offer', 'responded', 'applied', 'evaluated', 'pending', 'skip', 'rejected', 'discarded',
 ];

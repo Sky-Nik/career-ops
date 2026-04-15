@@ -10,6 +10,7 @@ import { ScorePill } from '@/components/ScorePill';
 
 const TABS = [
   { label: 'ALL', filter: 'all' },
+  { label: 'PENDING', filter: 'pending' },
   { label: 'EVALUATED', filter: 'evaluated' },
   { label: 'APPLIED', filter: 'applied' },
   { label: 'INTERVIEW', filter: 'interview' },
@@ -25,7 +26,7 @@ const SORT_OPTIONS = [
 ];
 
 function statusPriority(s: string) {
-  const order = ['interview', 'offer', 'responded', 'applied', 'evaluated', 'skip', 'rejected', 'discarded'];
+  const order = ['interview', 'offer', 'responded', 'applied', 'evaluated', 'pending', 'skip', 'rejected', 'discarded'];
   const i = order.indexOf(s);
   return i === -1 ? 99 : i;
 }
@@ -263,6 +264,15 @@ function ApplicationRow({ app, index }: { app: Application; index: number }) {
           >
             {app.role}
           </Link>
+        ) : app.job_url ? (
+          <a
+            href={app.job_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[var(--mauve)] transition-colors"
+          >
+            {app.role} ↗
+          </a>
         ) : (
           app.role
         )}

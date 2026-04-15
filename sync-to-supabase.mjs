@@ -205,6 +205,65 @@ async function syncReports(careerOpsPath) {
   return rows.length;
 }
 
+function parsePipeline(careerOpsPath) {
+  const filePath = path.join(careerOpsPath, 'data', 'pipeline.md');
+  if (!fs.existsSync(filePath)) return [];
+
+  const lines = fs.readFileSync(filePath, 'utf8').split('\n');
+  const pending = [];
+
+  for (const line of lines) {
+    const m = line.match(/^- \[ \] (.+?) \| (.+?) \| (.+)$/);
+    if (!m) continue;
+    pending.push({
+      date: new Date().toISOString().slice(0, 10),
+      company: m[2].trim(),
+      role: m[3].trim(),
+      status: 'pending',
+      score: 0,
+      score_raw: '',
+      has_pdf: false,
+      report_path: null,
+      report_number: null,
+      notes: '',
+      job_url: m[1].trim(),
+    });
+  }
+
+  return pending;
+}
+
+async function syncPending(careerOpsPath) {
+  const pending = parsePipeline(careerOpsPath);
+  if (pending.length === 0) {
+    console.log('  No pending jobs found.');
+    return 0;
+  }
+
+  // Only insert pending jobs that don't already exist as evaluated applications
+  const { data: existing } = await supabase
+    .from('applications')
+    .select('company, role');
+
+  const existingKeys = new Set((existing ?? []).map(a => `${a.company}|${a.role}`));
+  const newPending = pending.filter(p => !existingKeys.has(`${p.company}|${p.role}`));
+
+  if (newPending.length === 0) return 0;
+
+  const rows = newPending.map((p, i) => ({
+    ...p,
+    number: 9000 + i, // high number so they sort below evaluated
+    synced_at: new Date().toISOString(),
+  }));
+
+  const { error } = await supabase
+    .from('applications')
+    .upsert(rows, { onConflict: 'company,role' });
+
+  if (error) throw error;
+  return rows.length;
+}
+
 async function main() {
   const careerOpsPath = __dirname;
   console.log('career-ops → Supabase sync\n');
@@ -213,6 +272,10 @@ async function main() {
     process.stdout.write('Syncing applications...');
     const appCount = await syncApplications(careerOpsPath);
     console.log(` ${appCount} upserted`);
+
+    process.stdout.write('Syncing pending pipeline...');
+    const pendingCount = await syncPending(careerOpsPath);
+    console.log(` ${pendingCount} upserted`);
 
     process.stdout.write('Syncing reports...');
     const reportCount = await syncReports(careerOpsPath);
