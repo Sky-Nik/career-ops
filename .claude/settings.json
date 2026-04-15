@@ -9,7 +9,10 @@
       "WebFetch(domain:job-boards.greenhouse.io)",
       "WebFetch(domain:au.linkedin.com)",
       "WebFetch(domain:au.gradconnection.com)",
-      "WebFetch(domain:careers.rsm.com.au)"
+      "WebFetch(domain:careers.rsm.com.au)",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "Bash(node -e 'const j=require\\('\\\\''C:/Users/Nikhil/AppData/Roaming/com.vercel.cli/Data/auth.json'\\\\''\\); console.log\\(j.token||Object.values\\(j\\)[0]\\)')",
+      "Bash(curl -s -X PATCH 'https://api.vercel.com/v9/projects/prj_2U3gweMgQwUKCVTGkzzsPnU4nmFY?teamId=team_f5x797j2kaQ2IGPQY6iAPJ3A' -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -d '{\"rootDirectory\":\"web\"}')"
     ]
   }
 }
