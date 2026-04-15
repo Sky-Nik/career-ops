@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node sync-to-supabase.mjs)",
+      "mcp__claude_ai_Supabase__list_tables",
+      "WebFetch(domain:www.seek.com.au)",
+      "WebFetch(domain:au.indeed.com)",
+      "WebFetch(domain:job-boards.greenhouse.io)",
+      "WebFetch(domain:au.linkedin.com)",
+      "WebFetch(domain:au.gradconnection.com)",
+      "WebFetch(domain:careers.rsm.com.au)"
+    ]
+  }
+}
