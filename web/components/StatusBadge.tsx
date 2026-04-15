@@ -2,6 +2,7 @@ import { STATUS_LABELS } from '@/lib/types';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'text-[var(--mauve)] bg-[var(--mauve)]/10',
+  queued: 'text-[var(--peach)] bg-[var(--peach)]/10',
   interview: 'text-[var(--green)] bg-[var(--green)]/10',
   offer: 'text-[var(--green)] bg-[var(--green)]/10',
   responded: 'text-[var(--blue)] bg-[var(--blue)]/10',

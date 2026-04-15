@@ -39,6 +39,7 @@ export type StatusKey =
 
 export const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
+  queued: 'Queued',
   interview: 'Interview',
   offer: 'Offer',
   responded: 'Responded',

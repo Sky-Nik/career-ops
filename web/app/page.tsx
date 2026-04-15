@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { getApplications, computeMetrics } from '@/lib/data';
 import type { Application } from '@/lib/types';
@@ -38,6 +38,28 @@ export default function PipelinePage() {
   const [sortMode, setSortMode] = useState('score');
   const [search, setSearch] = useState('');
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const [queuing, setQueuing] = useState<Set<string>>(new Set());
+
+  const handleQueue = useCallback(async (company: string, role: string) => {
+    const key = `${company}|${role}`;
+    setQueuing(prev => new Set(prev).add(key));
+    try {
+      const res = await fetch('/api/queue-evaluation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company, role }),
+      });
+      if (res.ok) {
+        setApps(prev =>
+          prev.map(a =>
+            a.company === company && a.role === role ? { ...a, status: 'queued' } : a
+          )
+        );
+      }
+    } finally {
+      setQueuing(prev => { const s = new Set(prev); s.delete(key); return s; });
+    }
+  }, []);
 
   useEffect(() => {
     getApplications()
@@ -217,7 +239,13 @@ export default function PipelinePage() {
             </thead>
             <tbody>
               {filtered.map((app, i) => (
-                <ApplicationRow key={app.id} app={app} index={i} />
+                <ApplicationRow
+                  key={app.id}
+                  app={app}
+                  index={i}
+                  onQueue={handleQueue}
+                  isQueuing={queuing.has(`${app.company}|${app.role}`)}
+                />
               ))}
             </tbody>
           </table>
@@ -227,8 +255,19 @@ export default function PipelinePage() {
   );
 }
 
-function ApplicationRow({ app, index }: { app: Application; index: number }) {
+function ApplicationRow({
+  app,
+  index,
+  onQueue,
+  isQueuing,
+}: {
+  app: Application;
+  index: number;
+  onQueue: (company: string, role: string) => void;
+  isQueuing: boolean;
+}) {
   const rowBg = index % 2 === 0 ? 'var(--base)' : 'var(--mantle)';
+  const isPending = app.status === 'pending' || app.status === 'queued';
 
   return (
     <tr
@@ -236,7 +275,23 @@ function ApplicationRow({ app, index }: { app: Application; index: number }) {
       style={{ backgroundColor: rowBg, borderColor: 'var(--surface0)' }}
     >
       <td className="px-6 py-3">
-        <ScorePill score={app.score} />
+        {isPending ? (
+          <button
+            onClick={() => onQueue(app.company, app.role)}
+            disabled={isQueuing || app.status === 'queued'}
+            className="px-2 py-1 rounded text-xs font-medium transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: app.status === 'queued' ? 'var(--surface1)' : 'var(--blue)',
+              color: app.status === 'queued' ? 'var(--subtext)' : 'var(--base)',
+              cursor: isQueuing || app.status === 'queued' ? 'default' : 'pointer',
+            }}
+            title={app.status === 'queued' ? 'Queued — run process-queue.mjs to evaluate' : 'Queue for evaluation'}
+          >
+            {isQueuing ? '…' : app.status === 'queued' ? 'Queued' : 'Evaluate'}
+          </button>
+        ) : (
+          <ScorePill score={app.score} />
+        )}
       </td>
       <td className="px-3 py-3" style={{ color: 'var(--subtext)' }}>
         {app.date || '—'}
